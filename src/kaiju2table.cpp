@@ -42,6 +42,7 @@ int main(int argc, char** argv) {
 	int min_read_count = 0;
 
 	bool expand_viruses = false;
+	bool summarize_viruses = false;
 	bool filter_unclassified = false;
 	bool full_path = false;
 	bool verbose = false;
@@ -56,7 +57,7 @@ int main(int argc, char** argv) {
 	// ------------------------------------------- START -------------------------------------------
 	// Read command line params
 	int c;
-	while ((c = getopt(argc, argv, "hpveur:n:t:o:m:c:l:")) != -1) {
+	while ((c = getopt(argc, argv, "hpvesur:n:t:o:m:c:l:")) != -1) {
 		switch (c)  {
 			case 'h':
 				usage(argv[0]);
@@ -64,6 +65,8 @@ int main(int argc, char** argv) {
 				verbose = true; break;
 			case 'e':
 				expand_viruses = true; break;
+			case 's':
+				summarize_viruses = true; break;
 			case 'u':
 				filter_unclassified = true; break;
 			case 'r':
@@ -129,6 +132,9 @@ int main(int argc, char** argv) {
 	}
 	if(min_percent > 0.0 && min_read_count > 0) {
 		error("Either specify minimum percent with -m or minimum read count with -c."); usage(argv[0]);
+	}
+	if(summarize_viruses && !expand_viruses) {
+		error("-s requires that -e is used."); usage(argv[0]);
 	}
 
 	/* parse user-supplied rank list into list and set */
@@ -225,7 +231,7 @@ int main(int argc, char** argv) {
 		for(auto const it : node2hitcount) {
 			uint64_t id = it.first;
 			uint64_t reads = it.second;
-			if(is_ancestor(nodes,taxonid_viruses,id)) {
+			if(!summarize_viruses && is_ancestor(nodes,taxonid_viruses,id)) {
 				node2summarizedhits[id] = reads;
 				continue;
 			}
@@ -249,7 +255,7 @@ int main(int argc, char** argv) {
 		for(auto const it : node2summarizedhits) {
 			uint64_t id = it.first;
 			uint64_t count = it.second;
-			if(is_ancestor(nodes,taxonid_viruses,id)) { // viruses are always included regardless of count or rank
+			if(!summarize_viruses && is_ancestor(nodes,taxonid_viruses,id)) { // viruses are always included regardless of count or rank
 				sorted_count2ids.emplace(count,id);
 				continue;
 			}
@@ -379,7 +385,8 @@ void usage(char *progname) {
 	fprintf(stderr, "Optional arguments:\n");
 	fprintf(stderr, "   -m FLOAT      Number in [0, 100], denoting the minimum required percentage for the taxon (except viruses) to be reported (default: 0.0)\n");
 	fprintf(stderr, "   -c INT        Integer number > 0, denoting the minimum required number of reads for the taxon (except viruses) to be reported (default: 0)\n");
-	fprintf(stderr, "   -e            Expand viruses, which are always shown as full taxon path and read counts are not summarized in higher taxonomic levels.\n");
+	fprintf(stderr, "   -e            Expand viruses, which are always shown as full taxon path and read counts are not summarized in higher taxonomic levels (if -s is not used).\n");
+	fprintf(stderr, "   -s            Summarize expaned viruses read counts higher taxonomic levels.\n");
 	fprintf(stderr, "   -u            Unclassified reads are not counted for the total reads when calculating percentages for classified reads.\n");
 	fprintf(stderr, "   -p            Print full taxon path.\n");
 	fprintf(stderr, "   -l            Print taxon path containing only ranks specified by a comma-separated list,\n");
@@ -387,6 +394,7 @@ void usage(char *progname) {
 	fprintf(stderr, "   -v            Enable verbose output.\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Only one of the options -m and -c may be used at a time.\n");
+	fprintf(stderr, "-s requires that -e is used\n");
 	exit(EXIT_FAILURE);
 }
 
