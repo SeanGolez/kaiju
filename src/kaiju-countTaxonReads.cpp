@@ -25,10 +25,12 @@ void usage(char *progname);
 
 int main(int argc, char** argv) {
 
+	/*
 	std::unordered_map<uint64_t,uint64_t> nodes;
 	std::unordered_map<uint64_t, std::string> node2name;
 	std::unordered_map<uint64_t, std::string> node2rank;
 	std::unordered_map<uint64_t, std::string> node2path;
+	*/
 
 	std::string nodes_filename = "";
 	std::string names_filename = "";
@@ -43,7 +45,7 @@ int main(int argc, char** argv) {
 	// --------------------- START ------------------------------------------------------------------
 	// Read command line params
 	int c;
-	while ((c = getopt(argc, argv, "hvn:t:i:o:")) != -1) {
+	while ((c = getopt(argc, argv, "hvi:o:")) != -1) {
 		switch(c)  {
 			case 'h':
 				usage(argv[0]);
@@ -51,35 +53,43 @@ int main(int argc, char** argv) {
 				verbose = true; break;
 			case 'o':
 				out_filename = optarg; break;
+			/*
 			case 'n':
 				names_filename = optarg; break;
 			case 't':
 				nodes_filename = optarg; break;
+			*/
 			case 'i':
 				in_filename = optarg; break;
 			default:
 				usage(argv[0]);
 		}
 	}
+	/*
 	if(names_filename.length() == 0) { error("Please specify the location of the names.dmp file with the -n option."); usage(argv[0]); }
 	if(nodes_filename.length() == 0) { error("Please specify the location of the nodes.dmp file, using the -t option."); usage(argv[0]); }
+	*/
 	if(in_filename.length() == 0) { error("Please specify the location of the input file, using the -i option."); usage(argv[0]); }
-
+	
 	/* read nodes.dmp */
+	/*
 	std::ifstream nodes_file;
 	nodes_file.open(nodes_filename);
 	if(!nodes_file.is_open()) { std::cerr << "Error: Could not open file " << nodes_filename << std::endl; usage(argv[0]); }
 	if(verbose) std::cerr << "Reading taxonomic tree from file " << nodes_filename << std::endl;
 	parseNodesDmpWithRank(nodes,node2rank,nodes_file);
 	nodes_file.close();
+	*/
 
 	/* read names.dmp */
+	/*
 	std::ifstream names_file;
 	names_file.open(names_filename);
 	if(!names_file.is_open()) { std::cerr << "Error: Could not open file " << names_filename << std::endl; usage(argv[0]); }
 	if(verbose) std::cerr << "Reading taxon names from file " << names_filename << std::endl;
 	parseNamesDmp(node2name,names_file);
 	names_file.close();
+	*/
 
 	std::ifstream in_file;
 	in_file.open(in_filename);
@@ -120,6 +130,7 @@ int main(int argc, char** argv) {
 			continue;
 		}
 
+		/*
 		if(taxonid != 0 && nodes.count(taxonid)==0) {
 			std::cerr << "Warning: Taxon ID " << taxonid << " in output file is not contained in taxonomic tree file "<< nodes_filename << ".\n";
 			continue;
@@ -128,6 +139,7 @@ int main(int argc, char** argv) {
 			std::cerr << "Warning: Taxon ID " << taxonid << " in output file is not found in file "<< names_filename << ".\n";
 			continue;
 		}
+		*/
 
         taxid_counts[taxonid] += 1;
 	}  // end while getline
@@ -167,8 +179,10 @@ void usage(char *progname) {
 	fprintf(stderr, "Mandatory arguments:\n");
 	fprintf(stderr, "   -i FILENAME   Name of input file\n");
 	fprintf(stderr, "   -o FILENAME   Name of output file. If not specified, output will be printed to STDOUT.\n");
+	/*
 	fprintf(stderr, "   -t FILENAME   Name of nodes.dmp file\n");
 	fprintf(stderr, "   -n FILENAME   Name of names.dmp file.\n");
+	*/
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Optional arguments:\n");
 	fprintf(stderr, "   -v            Enable verbose output.\n");
