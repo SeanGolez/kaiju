@@ -243,6 +243,9 @@ int main(int argc, char** argv) {
 					*out_stream << getTaxonNameFromId(node2name, taxonid, names_filename) << "\t";
 				}
 			}
+			else {
+				*out_stream << "Unknown" << "\t";
+			}
 		}
 
 		*out_stream << read_count << "\n";
