@@ -638,16 +638,27 @@ void ConsumerThread::doWork() {
 		}
 
 		if(config->input_is_protein) {
+			query_len = static_cast<double>(item->sequence1.length());
+
 			if(item->sequence1.length() < config->min_fragment_length) {
-				output << "U\t" << item->name << "\t0\n";
+				output << "U\t" << item->name << "\t0";
+				output << "\t" << query_len;
+				output << "\n";
 				delete item;
 				continue;
 			}
 		}
 		else {
+			query_len = static_cast<double>(item->sequence1.length()) / 3.0;
+			if(item->paired) {
+				query_len += static_cast<double>(item->sequence2.length()) / 3.0;
+			}
+
 			if((!item->paired && item->sequence1.length() < config->min_fragment_length*3) ||
 				(item->paired && item->sequence1.length() < config->min_fragment_length*3 && item->sequence2.length() < config->min_fragment_length*3)) {
-				output << "U\t" << item->name << "\t0\n";
+				output << "U\t" << item->name << "\t0";
+				output << "\t" << query_len;
+				output << "\n";
 				delete item;
 				continue;
 			}
@@ -657,7 +668,6 @@ void ConsumerThread::doWork() {
 		extraoutput = "";
 
 		if(config->input_is_protein) {
-			query_len = static_cast<double>(item->sequence1.length());
 			for (auto & c: item->sequence1) {
 				c = (char)toupper(c);
 			}
@@ -695,13 +705,11 @@ void ConsumerThread::doWork() {
 			}
 		}
 		else { // normal mode with DNA input
-			query_len = static_cast<double>(item->sequence1.length()) / 3.0;
 			if(item->sequence1.length() >= config->min_fragment_length*3) {
 				if(config->debug) std::cerr << "Getting fragments for read: "<< item->sequence1 << "\n";
 				getAllFragmentsBits(item->sequence1);
 			}
 			if(item->paired) {
-				query_len += static_cast<double>(item->sequence2.length()) / 3.0;
 				if(item->sequence2.length() >= config->min_fragment_length*3) {
 					if(config->debug) std::cerr << "Getting fragments for 2nd read: " << item->sequence2 << "\n";
 					getAllFragmentsBits(item->sequence2);
@@ -724,6 +732,7 @@ void ConsumerThread::doWork() {
 		if(lca > 0) {
 			output << "C\t" << item->name << "\t" << lca;
 			if(config->verbose) output << "\t" << extraoutput;
+			output << "\t" << query_len;
 			output << "\n";
 			if(config->debug) {
 				std::cerr << "C\t" << item->name << "\t" << lca << "\t" << extraoutput << "\n";
@@ -731,7 +740,9 @@ void ConsumerThread::doWork() {
 
 		}
 		else  {
-			output << "U\t" << item->name << "\t0\n";
+			output << "U\t" << item->name << "\t0";
+			output << "\t" << query_len;
+			output << "\n";
 			if(config->debug) {
 				std::cerr << "U\t" << item->name << "\t0\n";
 			}
