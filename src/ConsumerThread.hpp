@@ -88,6 +88,7 @@ class ConsumerThread {
 	std::set<uint64_t> match_ids;
 	std::set<std::string> match_dbnames;
 
+	unsigned int longest_match_length = 0;
 	unsigned int best_match_score = 0;
 	std::string extraoutput = "";
 

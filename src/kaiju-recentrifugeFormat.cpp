@@ -108,69 +108,39 @@ int main(int argc, char** argv) {
 			continue;
 		}
 
-        uint64_t score;
-        double queryLength;
-        if (classified_code == 'C') {
-            start = end+1;
-            end = line.find('\t',start);
-            try {
-                score = stoul(line.substr(start,end-start));
-            }
-            catch(const std::invalid_argument& ia) {
-                std::cerr << "Error: Found bad score in line: " << line << std::endl;
-                continue;
-            }
-            catch (const std::out_of_range& oor) {
-                std::cerr << "Error: Found bad score (out of range error) in line: " << line << std::endl;
-                continue;
-            }
-
-            // skip 3 columns
-            for (int i=0; i<3; i++) {
-                start = end+1;
-                end = line.find('\t',start);
-            }
-
-            start = end+1;
-            end = line.find('\t',start);
-            try {
-                queryLength = stod(line.substr(start,end-start)) * 3; // multiply by 3 for NT length
-				queryLength = static_cast<int>(std::round(queryLength));
-
-            }
-            catch(const std::invalid_argument& ia) {
-                std::cerr << "Error: Found bad query length in line: " << line << std::endl;
-                continue;
-            }
-            catch (const std::out_of_range& oor) {
-                std::cerr << "Error: Found bad query length (out of range error) in line: " << line << std::endl;
-                continue;
-            }
-        }
-        else if(classified_code == 'U') {
-            score = 0;
-
-            start = end+1;
-            end = line.find('\t',start);
-            try {
-                queryLength = stod(line.substr(start,end-start)) * 3; // multiply by 3 for NT length
-				queryLength = static_cast<int>(std::round(queryLength));
-            }
-            catch(const std::invalid_argument& ia) {
-                std::cerr << "Error: Found bad query length in line: " << line << std::endl;
-                continue;
-            }
-            catch (const std::out_of_range& oor) {
-                std::cerr << "Error: Found bad query length (out of range error) in line: " << line << std::endl;
-                continue;
-            }
-        }
-        else {
-			std::cerr << "Error: Found bad classified/unclassifed indicator in line: " << line << std::endl;
+		start = end+1;
+		end = line.find('\t',start);
+		uint64_t score;
+		try {
+			score = stoul(line.substr(start,end-start));
+		}
+		catch(const std::invalid_argument& ia) {
+			std::cerr << "Error: Found bad score in line: " << line << std::endl;
 			continue;
-        }
+		}
+		catch (const std::out_of_range& oor) {
+			std::cerr << "Error: Found bad score (out of range error) in line: " << line << std::endl;
+			continue;
+		}
 
-        *out_stream << readID << "\t" << taxID << "\t" << queryLength << "\t" << score << "\n";
+		start = end+1;
+		end = line.find('\t',start);
+		double queryLength;
+		try {
+			queryLength = stod(line.substr(start,end-start)) * 3; // multiply by 3 for NT length
+			queryLength = static_cast<int>(std::round(queryLength));
+
+		}
+		catch(const std::invalid_argument& ia) {
+			std::cerr << "Error: Found bad query length in line: " << line << std::endl;
+			continue;
+		}
+		catch (const std::out_of_range& oor) {
+			std::cerr << "Error: Found bad query length (out of range error) in line: " << line << std::endl;
+			continue;
+		}
+
+        *out_stream << readID << "\t" << taxID << "\t" << score << "\t" << queryLength << "\n";
         
 	}  // end while getline
 
@@ -192,7 +162,7 @@ void usage(char *progname) {
 	fprintf(stderr, "Usage:\n   %s -i kaiju.out -o kaiju-recentrifugeformat.out\n", progname);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Mandatory arguments:\n");
-	fprintf(stderr, "   -i FILENAME   Name of input file (verbose kaiju output)\n");
+	fprintf(stderr, "   -i FILENAME   Name of input file (kaiju output)\n");
 	fprintf(stderr, "   -o FILENAME   Name of output file. If not specified, output will be printed to STDOUT.\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Optional arguments:\n");
