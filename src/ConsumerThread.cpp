@@ -526,7 +526,6 @@ uint64_t ConsumerThread::classify_greedyblosum() {
 
 		if(config->verbose)  {
 			std::stringstream ss;
-			ss << best_match_score << "\t" ;
 			for(auto it : match_ids) ss << it << ",";
 			ss  << "\t";
 			for(auto it : match_dbnames) ss << it << ",";
@@ -542,9 +541,9 @@ uint64_t ConsumerThread::classify_greedyblosum() {
 
 uint64_t ConsumerThread::classify_length() {
 
-		unsigned int longest_match_length = 0;
 		longest_matches_SI.clear();
 		longest_fragments.clear();
+		longest_match_length = 0;
 
 		while(1) {
 			Fragment * t = getNextFragment(longest_match_length);
@@ -613,7 +612,6 @@ uint64_t ConsumerThread::classify_length() {
 
 		if(config->verbose) {
 			std::stringstream ss;
-			ss << longest_match_length << "\t";
 			for(auto it : match_ids) ss << it << ",";
 			ss  << "\t";
 			for(auto it : match_dbnames) ss << it << ",";
@@ -641,8 +639,7 @@ void ConsumerThread::doWork() {
 			query_len = static_cast<double>(item->sequence1.length());
 
 			if(item->sequence1.length() < config->min_fragment_length) {
-				output << "U\t" << item->name << "\t0";
-				output << "\t" << query_len;
+				output << "U\t" << item->name << "\t0\t0\t" << query_len;
 				output << "\n";
 				delete item;
 				continue;
@@ -656,8 +653,7 @@ void ConsumerThread::doWork() {
 
 			if((!item->paired && item->sequence1.length() < config->min_fragment_length*3) ||
 				(item->paired && item->sequence1.length() < config->min_fragment_length*3 && item->sequence2.length() < config->min_fragment_length*3)) {
-				output << "U\t" << item->name << "\t0";
-				output << "\t" << query_len;
+				output << "U\t" << item->name << "\t0\t0\t" << query_len;
 				output << "\n";
 				delete item;
 				continue;
@@ -665,6 +661,7 @@ void ConsumerThread::doWork() {
 		}
 
 		uint64_t lca = 0;
+		unsigned int best_score_or_length = 0;
 		extraoutput = "";
 
 		if(config->input_is_protein) {
@@ -721,18 +718,19 @@ void ConsumerThread::doWork() {
 
 		if(config->mode == MEM) {
 			lca = classify_length();
+			best_score_or_length = longest_match_length;
 		}
 		else if(config->mode == GREEDY) {
 			lca = classify_greedyblosum();
+			best_score_or_length = best_match_score;
 		}
 		else { // this should not happen
 			assert(false);
 		}
 
 		if(lca > 0) {
-			output << "C\t" << item->name << "\t" << lca;
+			output << "C\t" << item->name << "\t" << lca << "\t" << best_score_or_length  << "\t" << query_len;
 			if(config->verbose) output << "\t" << extraoutput;
-			output << "\t" << query_len;
 			output << "\n";
 			if(config->debug) {
 				std::cerr << "C\t" << item->name << "\t" << lca << "\t" << extraoutput << "\n";
@@ -740,8 +738,7 @@ void ConsumerThread::doWork() {
 
 		}
 		else  {
-			output << "U\t" << item->name << "\t0";
-			output << "\t" << query_len;
+			output << "U\t" << item->name << "\t0\t0\t" << query_len;
 			output << "\n";
 			if(config->debug) {
 				std::cerr << "U\t" << item->name << "\t0\n";
