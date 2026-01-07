@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	if(verbose) std::cerr << "Processing " << in_filename <<"..." << "\n";
 
     // write header
-    *out_stream << "readID" << "\t" << "taxID" << "\t" << "queryLength" << "\t" << "score" << "\n";
+    *out_stream << "readID" << "\t" << "taxID" << "\t" << "score" << "\t" << "queryLength" << "\n";
 
 	// read file and count reads
 	std::string line;
