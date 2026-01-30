@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
 		end = line.find('\t',start);
 		uint64_t score;
 		try {
-			score = stoul(line.substr(start,end-start));
+			score = stoul(line.substr(start,end-start)) * 3; // multiply by 3 for NT length
 		}
 		catch(const std::invalid_argument& ia) {
 			std::cerr << "Error: Found bad score in line: " << line << std::endl;
